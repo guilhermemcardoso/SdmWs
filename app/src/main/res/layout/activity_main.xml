@@ -10,7 +10,6 @@
         android:id="@+id/cursoTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
         android:lines="6"
         android:maxLines="6"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -56,5 +55,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/disciplinaLabelTv" />
+
+    <TextView
+        android:id="@+id/disciplinaTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="6"
+        android:maxLines="6"
+        android:layout_marginTop="50dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/disciplinaSp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

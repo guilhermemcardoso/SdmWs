@@ -90,6 +90,31 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             disciplinaSpAdapter.notifyDataSetChanged()
+            activityMainBinding.disciplinaSp.setSelection(0)
+            sdmWsViewModel.getDisciplina(listaDisciplinas[0])
+        }
+
+        // listener para spinner de disciplinas
+        activityMainBinding.disciplinaSp.onItemSelectedListener =
+            object: AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, posicao: Int, p3: Long) {
+                    val sigla = listaDisciplinas[posicao]
+                    sdmWsViewModel.getDisciplina(sigla)
+
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    // Não se aplica
+                }
+            }
+
+        sdmWsViewModel.disciplinaMdl.observe(this) { disciplina ->
+            val disciplinaSb = StringBuilder()
+            disciplinaSb.append("Nome: ${disciplina.nome}\n")
+            disciplinaSb.append("Sigla: ${disciplina.sigla}\n")
+            disciplinaSb.append("Aulas: ${disciplina.aulas}\n")
+            disciplinaSb.append("Horas: ${disciplina.horas}\n")
+            activityMainBinding.disciplinaTv.text = disciplinaSb.toString()
         }
 
         sdmWsViewModel.getCurso()

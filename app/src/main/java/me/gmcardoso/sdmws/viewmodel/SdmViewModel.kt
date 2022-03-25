@@ -6,12 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.google.gson.JsonObject
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,6 +30,8 @@ class SdmViewModel(application: Application): AndroidViewModel(application) {
     private val filaRequisicoesVolley: RequestQueue =
         Volley.newRequestQueue(application.baseContext)
 
+    private val gson: Gson = Gson()
+
     companion object {
         val URL_BASE = "https://nobile.pro.br/sdm_ws"
         val ENDPOINT_CURSO = "/curso"
@@ -47,7 +48,7 @@ class SdmViewModel(application: Application): AndroidViewModel(application) {
                 null,
                 { response ->
                     if (response != null) {
-                        val curso: Curso = jsonToCurso(response)
+                        val curso: Curso = gson.fromJson(response.toString(), Curso::class.java)
                         cursoMdl.postValue(curso)
                     }
                 },
@@ -67,12 +68,7 @@ class SdmViewModel(application: Application): AndroidViewModel(application) {
                 null,
                 { response ->
                     response?.also { disciplinaJar ->
-                        val semestre = Semestre()
-                        for (indice in 0 until disciplinaJar.length()) {
-                            val disciplinaJson = disciplinaJar.getJSONObject(indice)
-                            val disciplina = jsonToDisciplina(disciplinaJson)
-                            semestre.add(disciplina)
-                        }
+                        val semestre = gson.fromJson(response.toString(), Semestre::class.java)
                         semestreMdl.postValue(semestre)
                     }
                 },
@@ -84,28 +80,27 @@ class SdmViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun getDisciplina(sigla: String) {
+        escopoCorrotinas.launch {
+            val urlDisciplina = "${URL_BASE}${ENDPOINT_DISCIPLINA}"
+            val requisicaoDisciplinaSr = object: StringRequest(
+                Request.Method.POST,
+                urlDisciplina,
+                { response ->
+                    if (response != null) {
+                        val disciplina: Disciplina = gson.fromJson(response, Disciplina::class.java)
+                        disciplinaMdl.postValue(disciplina)
+                    }
+                },
+                { error -> Log.e(urlDisciplina, error.toString())}
+            ) {
+                override fun getParams(): MutableMap<String, String>? {
+                    val params = mutableMapOf<String, String>()
+                    params["sigla"] = sigla
+                    return params
+                }
+            }
 
-    }
-
-    private fun jsonToCurso(json: JSONObject): Curso {
-        val curso: Curso = Curso(
-            json.getInt("horas"),
-            json.getString("nome"),
-            json.getInt("semestres"),
-            json.getString("sigla")
-        )
-
-        return curso
-    }
-
-    private fun jsonToDisciplina(json: JSONObject): Disciplina {
-        val disciplina: Disciplina = Disciplina(
-            json.getInt("aulas"),
-            json.getInt("horas"),
-            json.getString("nome"),
-            json.getString("sigla")
-        )
-
-        return disciplina
+            filaRequisicoesVolley.add(requisicaoDisciplinaSr)
+        }
     }
 }
