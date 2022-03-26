@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
@@ -18,7 +19,8 @@ import kotlinx.coroutines.launch
 import me.gmcardoso.sdmws.model.Curso
 import me.gmcardoso.sdmws.model.Disciplina
 import me.gmcardoso.sdmws.model.Semestre
-import org.json.JSONObject
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 class SdmViewModel(application: Application): AndroidViewModel(application) {
     val cursoMdl: MutableLiveData<Curso> = MutableLiveData()
@@ -29,6 +31,29 @@ class SdmViewModel(application: Application): AndroidViewModel(application) {
 
     private val filaRequisicoesVolley: RequestQueue =
         Volley.newRequestQueue(application.baseContext)
+
+    init {
+        exemplosReflexao()
+    }
+
+    private fun exemplosReflexao() {
+        /* Tipo Classe */
+        val classeResponseJava: Class<Response<*>> = Response::class.java
+        val classeResponseKotlin: KClass<Response<*>> = (Response::class.java).kotlin
+        Log.v("REFLEXÃO", "Classe Response Java: ${classeResponseJava.canonicalName}")
+        Log.v("REFLEXÃO", "Classe Response Kotlin: ${classeResponseKotlin.qualifiedName}")
+
+        /* Atributos e propriedades */
+        classeResponseJava.declaredFields.forEach { atributo ->
+            Log.v("REFLEXÃO", "Atributo Java: ${atributo}")
+        }
+
+        classeResponseKotlin.members.forEach { membro ->
+            if(membro is KProperty) {
+                Log.v("REFLEXÃO", "Membro Kotlin: ${membro}")
+            }
+        }
+    }
 
     private val gson: Gson = Gson()
 
